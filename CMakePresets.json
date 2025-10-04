@@ -1,0 +1,63 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 15,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "ninja-release",
+      "displayName": "Ninja - Release",
+      "description": "Release build using Ninja generator",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "gcc"
+      }
+    },
+    {
+      "name": "ninja-debug",
+      "displayName": "Ninja - Debug",
+      "description": "Debug build using Ninja generator",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "gcc"
+      }
+    },
+    {
+      "name": "mingw-release",
+      "displayName": "MinGW Makefiles - Release",
+      "description": "Release build using MinGW Makefiles",
+      "generator": "MinGW Makefiles",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "gcc"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "ninja-release",
+      "configurePreset": "ninja-release",
+      "displayName": "Build - Ninja Release",
+      "description": "Build release configuration"
+    },
+    {
+      "name": "ninja-debug",
+      "configurePreset": "ninja-debug",
+      "displayName": "Build - Ninja Debug",
+      "description": "Build debug configuration"
+    },
+    {
+      "name": "mingw-release",
+      "configurePreset": "mingw-release",
+      "displayName": "Build - MinGW Release",
+      "description": "Build release with MinGW Makefiles"
+    }
+  ]
+}

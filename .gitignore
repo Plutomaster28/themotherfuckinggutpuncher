@@ -1,0 +1,48 @@
+# Compiled executables
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Object files
+*.o
+*.obj
+*.a
+*.lib
+
+# Build directories
+build/
+build-debug/
+release/
+dist/
+out/
+
+# CMake files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+cmake-build-*/
+CTestTestfile.cmake
+_deps/
+
+# Debug files
+*.pdb
+*.ilk
+
+# Temporary files
+*.tmp
+tasks.tmp
+*.log
+
+# IDE files
+.vscode/
+.vs/
+*.suo
+*.user
+*.sln
+*.vcxproj*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
