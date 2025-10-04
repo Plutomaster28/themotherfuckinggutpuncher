@@ -32,18 +32,36 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc")
 endif()
 
-# Main executable
-add_executable(gutpuncher gutpuncher.c)
+# Platform-specific source files
+if(WIN32)
+    set(SOURCE_FILES gutpuncher.c)
+elseif(APPLE)
+    set(SOURCE_FILES gutpuncher_macos.c)
+else()
+    message(FATAL_ERROR "Unsupported platform")
+endif()
 
-# Link Windows libraries
-target_link_libraries(gutpuncher
-    psapi
-    shlwapi
-    advapi32
-    kernel32
-    user32
-    shell32
-)
+# Main executable
+add_executable(gutpuncher ${SOURCE_FILES})
+
+# Platform-specific libraries
+if(WIN32)
+    # Link Windows libraries
+    target_link_libraries(gutpuncher
+        psapi
+        shlwapi
+        advapi32
+        kernel32
+        user32
+        shell32
+    )
+elseif(APPLE)
+    # Link macOS libraries
+    target_link_libraries(gutpuncher
+        "-framework CoreFoundation"
+        "-framework Security"
+    )
+endif()
 
 # Set subsystem to console
 if(WIN32)

@@ -1,0 +1,172 @@
+name: Build GutPuncher
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    name: Build Windows (UCRT64)
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: UCRT64
+        update: true
+        install: >-
+          mingw-w64-ucrt-x86_64-gcc
+          mingw-w64-ucrt-x86_64-cmake
+          mingw-w64-ucrt-x86_64-ninja
+          
+    - name: Build with CMake
+      shell: msys2 {0}
+      run: |
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc
+        cmake --build build
+        
+    - name: Get file size
+      shell: pwsh
+      run: |
+        $size = (Get-Item build/bin/gutpuncher.exe).Length / 1KB
+        Write-Host "Executable size: $([math]::Round($size, 2)) KB"
+        
+    - name: Upload Windows artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: gutpuncher-windows-x64
+        path: build/bin/gutpuncher.exe
+        retention-days: 90
+
+  build-macos:
+    name: Build macOS (Universal)
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install dependencies
+      run: |
+        brew install cmake ninja
+        
+    - name: Build with CMake (x86_64)
+      run: |
+        cmake -B build-x64 -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_OSX_ARCHITECTURES=x86_64 \
+          -DCMAKE_C_COMPILER=clang
+        cmake --build build-x64
+        
+    - name: Build with CMake (ARM64)
+      run: |
+        cmake -B build-arm64 -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_OSX_ARCHITECTURES=arm64 \
+          -DCMAKE_C_COMPILER=clang
+        cmake --build build-arm64
+        
+    - name: Create Universal Binary
+      run: |
+        lipo -create \
+          build-x64/bin/gutpuncher \
+          build-arm64/bin/gutpuncher \
+          -output gutpuncher-universal
+        chmod +x gutpuncher-universal
+        file gutpuncher-universal
+        ls -lh gutpuncher-universal
+        
+    - name: Upload macOS artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: gutpuncher-macos-universal
+        path: gutpuncher-universal
+        retention-days: 90
+
+  create-release:
+    name: Create Release
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download Windows artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: gutpuncher-windows-x64
+        path: ./artifacts/windows
+        
+    - name: Download macOS artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: gutpuncher-macos-universal
+        path: ./artifacts/macos
+        
+    - name: Create Release Info
+      run: |
+        echo "Build Date: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" > release-info.txt
+        echo "Commit: ${{ github.sha }}" >> release-info.txt
+        echo "" >> release-info.txt
+        echo "Files:" >> release-info.txt
+        ls -lh artifacts/windows/
+        ls -lh artifacts/macos/
+        
+    - name: Generate build tag
+      id: tag
+      run: echo "tag=build-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
+      
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.tag.outputs.tag }}
+        name: "GutPuncher Build ${{ steps.tag.outputs.tag }}"
+        body: |
+          ## GutPuncher - Automated Build 🥊
+          
+          **Build Date:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')
+          **Commit:** ${{ github.sha }}
+          
+          ### Downloads
+          
+          - **Windows (x64):** `gutpuncher.exe` - Static UCRT64 build
+          - **macOS (Universal):** `gutpuncher-universal` - Intel + Apple Silicon
+          
+          ### What's Included
+          
+          ✅ 12 aggressive cleaning phases
+          ✅ Targets Comet AI Browser & Perplexity variants
+          ✅ Deep system cleanup (processes, files, registry, services)
+          ✅ Static builds (no dependencies required)
+          
+          ### Usage
+          
+          **Windows:**
+          ```
+          Right-click gutpuncher.exe > Run as Administrator
+          ```
+          
+          **macOS:**
+          ```
+          chmod +x gutpuncher-universal
+          sudo ./gutpuncher-universal
+          ```
+          
+          ⚠️ **Always run with elevated privileges!**
+        files: |
+          artifacts/windows/gutpuncher.exe
+          artifacts/macos/gutpuncher-universal
+          release-info.txt
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

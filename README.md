@@ -2,7 +2,34 @@
 
 **Aggressive Malware Removal Tool**
 
-GutPuncher is a powerful, no-nonsense malware removal tool specifically designed to hunt down and eliminate the Comet AI Browser and associated computer worms. Built in C and compiled as a static executable, it works on any Windows machine without dependencies.
+GutPuncher is a powerful, no-nonsense malware removal tool specifically designed to hunt down and eliminate the Comet AI Browser and associated computer worms. B## 🍎 macOS Version
+
+GutPuncher is also available for macOS! See [README_MACOS.md](README_MACOS.md) for details.
+
+**GitHub Actions automatically builds both versions:**
+- Windows (UCRT64 static executable)
+- macOS (Universal binary - Intel + Apple Silicon)
+
+Download pre-built binaries from the [Releases](https://github.com/Plutomaster28/themotherfuckinggutpuncher/releases) page!
+
+## 📄 License
+
+This is free and unencumbered software released into the public domain.
+
+## 🤝 Contributing
+
+Found a new Comet AI variant? Submit the process names, file paths, or registry keys!
+
+## 🔄 Automated Builds
+
+Every push to `main` triggers automated builds via GitHub Actions:
+- ✅ Windows x64 (UCRT64 static)
+- ✅ macOS Universal (Intel + Apple Silicon)
+- ✅ Automatic releases with both binaries
+
+---
+
+**Remember**: After running GutPuncher, restart your computer to complete the cleanup process.nd compiled as a static executable, it works on any Windows machine without dependencies.
 
 ## Features
 
